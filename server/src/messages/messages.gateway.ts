@@ -1,16 +1,17 @@
-import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
+import { UsePipes, ValidationPipe } from '@nestjs/common';
 import {
+  ConnectedSocket,
   MessageBody,
   SubscribeMessage,
   WebSocketGateway,
   WsException,
 } from '@nestjs/websockets';
+import { WebSocket } from 'ws';
 
 import { LISTEN_AS_NAME, SEND_MESSAGE_NAME } from './const';
 import { CLIENT_URL_CONFIG_KEY } from '@/const';
 import { MessagesService } from './messages.service';
 import { ListenAsDto, SendMessageDto } from './dto';
-import { startWith } from 'rxjs';
 
 @UsePipes(
   new ValidationPipe({
@@ -25,36 +26,24 @@ import { startWith } from 'rxjs';
   },
 })
 export class MessagesGateway {
-  private log = new Logger();
-
   constructor(private service: MessagesService) {}
 
   @SubscribeMessage(LISTEN_AS_NAME)
-  listenAs(@MessageBody() dto: ListenAsDto) {
-    this.log.log(
-      `Connected listener with name "${dto.name}"`,
-      MessagesGateway.name,
-    );
-
-    const msgs = this.service.listenAs(dto);
-
-    return msgs.pipe(
-      startWith({
-        event: LISTEN_AS_NAME,
-        data: dto,
-      }),
-    );
+  listenAs(
+    @MessageBody() dto: ListenAsDto,
+    @ConnectedSocket() socket: WebSocket,
+  ) {
+    return {
+      event: LISTEN_AS_NAME,
+      data: this.service.listenAs(socket, dto),
+    };
   }
 
   @SubscribeMessage(SEND_MESSAGE_NAME)
-  sendMessage(@MessageBody() dto: SendMessageDto) {
-    this.log.log(
-      `Sent message from "${dto.from}" to "${dto.to}" with title "${dto.title}" and content "${dto.content}"`,
-      MessagesGateway.name,
-    );
+  async sendMessage(@MessageBody() dto: SendMessageDto) {
     return {
       event: SEND_MESSAGE_NAME,
-      data: this.service.sendMessage(dto),
+      data: await this.service.sendMessage(dto),
     };
   }
 }
