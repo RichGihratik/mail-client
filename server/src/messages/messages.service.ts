@@ -27,6 +27,6 @@ export class MessagesService {
   async sendMessage(inputMessage: SendMessageDto) {
     await this.db.message.create({ data: { ...inputMessage } });
     this.messageObservable.next({ ...inputMessage });
-    return 'success';
+    return inputMessage;
   }
 }

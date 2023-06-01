@@ -10,6 +10,7 @@ import { LISTEN_AS_NAME, SEND_MESSAGE_NAME } from './const';
 import { CLIENT_URL_CONFIG_KEY } from '@/const';
 import { MessagesService } from './messages.service';
 import { ListenAsDto, SendMessageDto } from './dto';
+import { startWith } from 'rxjs';
 
 @UsePipes(
   new ValidationPipe({
@@ -34,7 +35,15 @@ export class MessagesGateway {
       `Connected listener with name "${dto.name}"`,
       MessagesGateway.name,
     );
-    return this.service.listenAs(dto);
+
+    const msgs = this.service.listenAs(dto);
+
+    return msgs.pipe(
+      startWith({
+        event: LISTEN_AS_NAME,
+        data: dto,
+      }),
+    );
   }
 
   @SubscribeMessage(SEND_MESSAGE_NAME)
@@ -43,6 +52,9 @@ export class MessagesGateway {
       `Sent message from "${dto.from}" to "${dto.to}" with title "${dto.title}" and content "${dto.content}"`,
       MessagesGateway.name,
     );
-    return this.service.sendMessage(dto);
+    return {
+      event: SEND_MESSAGE_NAME,
+      data: this.service.sendMessage(dto),
+    };
   }
 }
