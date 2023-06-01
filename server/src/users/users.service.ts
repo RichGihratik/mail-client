@@ -6,7 +6,21 @@ export class UsersService {
   constructor(private db: DatabaseService) {}
 
   async getUsers() {
-    return await this.db.mailUser.findMany({ select: { name: true } });
+    const result = await this.db.message.findMany({
+      select: {
+        from: true,
+        to: true,
+      },
+    });
+
+    const set = new Set();
+
+    result.forEach((item) => {
+      set.add(item.from);
+      set.add(item.to);
+    });
+
+    return [...set];
   }
 
   async getAll(name: string) {
@@ -17,40 +31,28 @@ export class UsersService {
   }
 
   async getSent(name: string) {
-    return (
-      (await this.db.mailUser.findUnique({
-        select: {
-          sent: {
-            select: {
-              title: true,
-              content: true,
-              toName: true,
-            },
-          },
-        },
-        where: {
-          name: name,
-        },
-      })) ?? { sent: [] }
-    ).sent;
+    return await this.db.message.findMany({
+      where: {
+        from: name,
+      },
+      select: {
+        title: true,
+        content: true,
+        to: true,
+      },
+    });
   }
 
   async getInbox(name: string) {
-    return (
-      (await this.db.mailUser.findUnique({
-        select: {
-          inbox: {
-            select: {
-              title: true,
-              content: true,
-              fromName: true,
-            },
-          },
-        },
-        where: {
-          name: name,
-        },
-      })) ?? { inbox: [] }
-    ).inbox;
+    return await this.db.message.findMany({
+      where: {
+        to: name,
+      },
+      select: {
+        title: true,
+        content: true,
+        from: true,
+      },
+    });
   }
 }
