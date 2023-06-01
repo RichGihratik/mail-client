@@ -5,7 +5,9 @@ import {
   WebSocketGateway,
   WsException,
 } from '@nestjs/websockets';
+
 import { LISTEN_AS_NAME, SEND_MESSAGE_NAME } from './const';
+import { CLIENT_URL_CONFIG_KEY } from '@/const';
 import { MessagesService } from './messages.service';
 import { ListenAsDto, SendMessageDto } from './dto';
 
@@ -16,7 +18,11 @@ import { ListenAsDto, SendMessageDto } from './dto';
     },
   }),
 )
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: {
+    origin: process.env[CLIENT_URL_CONFIG_KEY],
+  },
+})
 export class MessagesGateway {
   private log = new Logger();
 
