@@ -12,6 +12,7 @@ import { LISTEN_AS_NAME, SEND_MESSAGE_NAME } from './const';
 import { CLIENT_URL_CONFIG_KEY } from '@/const';
 import { MessagesService } from './messages.service';
 import { ListenAsDto, SendMessageDto } from './dto';
+import { SocketCheckGateway } from './socket-check.gateway';
 
 @UsePipes(
   new ValidationPipe({
@@ -25,8 +26,10 @@ import { ListenAsDto, SendMessageDto } from './dto';
     origin: process.env[CLIENT_URL_CONFIG_KEY],
   },
 })
-export class MessagesGateway {
-  constructor(private service: MessagesService) {}
+export class MessagesGateway extends SocketCheckGateway {
+  constructor(private service: MessagesService) {
+    super();
+  }
 
   @SubscribeMessage(LISTEN_AS_NAME)
   listenAs(
