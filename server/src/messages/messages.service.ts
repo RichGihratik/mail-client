@@ -18,20 +18,13 @@ export class MessagesService {
 
   private subs = new WeakMap<WebSocket, Subscription>();
 
-  private log = new Logger();
+  private log = new Logger(LOG_CONTEXT);
 
   listenAs(ip: WebSocket, dto: ListenAsDto) {
     if (this.subs.has(ip)) {
       this.subs.get(ip).unsubscribe();
-      this.log.log(
-        `Reconnected old listener with name "${dto.name}"`,
-        LOG_CONTEXT,
-      );
-    } else
-      this.log.log(
-        `Connected new listener with name "${dto.name}"`,
-        LOG_CONTEXT,
-      );
+      this.log.log(`Reconnected old listener with name "${dto.name}"`);
+    } else this.log.log(`Connected new listener with name "${dto.name}"`);
     const obs = this.createObservable(dto);
     this.subs.set(
       ip,
@@ -60,13 +53,18 @@ export class MessagesService {
   }
 
   async sendMessage(dto: SendMessageDto) {
-    await this.db.message.create({ data: { ...dto } });
-    this.messageObservable.next({ ...dto });
+    const msg = await this.db.message.create({
+      data: { ...dto },
+    });
+    this.messageObservable.next({ ...msg });
 
     this.log.log(
       `Sent message from "${dto.from}" to "${dto.to}" with title "${dto.title}" and content "${dto.content}"`,
-      LOG_CONTEXT,
     );
-    return dto;
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { from, ...result } = msg;
+
+    return result;
   }
 }

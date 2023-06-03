@@ -36,6 +36,7 @@ export class UsersService {
         from: name,
       },
       select: {
+        id: true,
         title: true,
         content: true,
         to: true,
@@ -49,6 +50,7 @@ export class UsersService {
         to: name,
       },
       select: {
+        id: true,
         title: true,
         content: true,
         from: true,
