@@ -1,4 +1,5 @@
 import { getAllMessages } from '@/api';
+import { InboxMessage, SentMessage } from '@/types';
 import { atom, selector } from 'recoil';
 
 export const listenAsName = atom({
@@ -35,13 +36,19 @@ const msgLists = selector({
 export const sent = selector({
   key: 'sentMessages',
   get: ({ get }) => {
-    return get(msgLists).sent;
+    return get(msgLists).sent.reduce(
+      (acc, msg) => acc.set(msg.id, msg),
+      new Map<number, SentMessage>(),
+    );
   },
 });
 
 export const inbox = selector({
   key: 'sentMessages',
   get: ({ get }) => {
-    return get(msgLists).inbox;
+    return get(msgLists).inbox.reduce(
+      (acc, msg) => acc.set(msg.id, msg),
+      new Map<number, InboxMessage>(),
+    );
   },
 });
