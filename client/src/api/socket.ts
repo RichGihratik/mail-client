@@ -23,7 +23,7 @@ type InboxEvent = {
 type Events = ListenAsEvent | SendEvent | InboxEvent;
 
 export class MessageSocket {
-  #socket = webSocket<Events>({ url: WS_URL });
+  #socket = webSocket<Events>(WS_URL);
   #name = '';
 
   get socket() {
@@ -37,6 +37,13 @@ export class MessageSocket {
     );
   }
 
+  get reconnect(): Observable<ListenAsEvent['data']> {
+    return this.socket.pipe(
+      filter((item) => item.event === LISTEN_AS),
+      map((item) => (item as ListenAsEvent).data),
+    );
+  }
+
   get inbox(): Observable<InboxMessage> {
     return this.socket.pipe(
       filter((item) => item.event === INBOX_EVENT),
@@ -44,27 +51,13 @@ export class MessageSocket {
     );
   }
 
-  #loading = false;
-
-  get loading() {
-    return this.#loading;
-  }
-
-  constructor(name: string) {
-    this.listenAs(name);
-    this.socket
-      .pipe(
-        filter((item) => item.event === LISTEN_AS),
-        map((item) => (item as ListenAsEvent).data.name),
-      )
-      .subscribe((item) => {
-        this.#name = item;
-        this.#loading = false;
-      });
+  constructor() {
+    this.reconnect.subscribe((data) => {
+      this.#name = data.name;
+    });
   }
 
   listenAs(name: string) {
-    this.#loading = true;
     this.#socket.next({
       event: LISTEN_AS,
       data: { name },
@@ -81,20 +74,35 @@ export class MessageSocket {
       data: result,
     });
   }
+
+  disconnect() {
+    this.#socket.complete();
+  }
 }
 
 let socket: MessageSocket | undefined = undefined;
 
-export function connect(name: string) {
+export function connect(name: string, reconnectCb?: () => void) {
   if (name === '') {
     disconnect();
+    if (reconnectCb) reconnectCb();
     return socket;
   }
-  if (!socket) socket = new MessageSocket(name);
-  else socket.listenAs(name);
+
+  if (!socket) socket = new MessageSocket();
+
+  if (reconnectCb) {
+    const sub = socket.reconnect.subscribe(() => {
+      reconnectCb();
+      sub.unsubscribe();
+    });
+  }
+
+  socket.listenAs(name);
   return socket;
 }
 
 export function disconnect() {
+  socket?.disconnect();
   socket = undefined;
 }
