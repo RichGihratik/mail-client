@@ -1,16 +1,36 @@
-import { TextField } from "@mui/material";
+import { TextField, Button, Typography } from '@mui/material';
 import { ChangeEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { observer } from 'mobx-react';
+import { messageStore } from '@/store';
 
-export function EnterNameView() {
+export const EnterNameView = observer(() => {
   const [name, setName] = useState('');
+  const navigate = useNavigate();
 
-  function onChange(e: ChangeEvent<HTMLInputElement>) {
+  function onChange({ target: { value } }: ChangeEvent<HTMLInputElement>) {
+    setName(value);
+  }
 
+  function login() {
+    if (name !== '') {
+      messageStore.setName(name);
+      navigate(`/${name}`);
+    }
   }
 
   return (
-    <div className=''>
-      <TextField onChange={onChange}/>
+    <div className="flex flex-col gap-4 h-100 flex-1 max-w-lg self-center justify-center">
+      <Typography variant="h6">Enter name:</Typography>
+      <TextField variant="standard" onChange={onChange} label="Name" />
+      <Button
+        disabled={name === ''}
+        variant="contained"
+        color="primary"
+        onClick={login}
+      >
+        Login
+      </Button>
     </div>
   );
-}
+});

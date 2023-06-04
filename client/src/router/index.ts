@@ -1,2 +1,2 @@
-export { Router } from "./Router";
-export { RoutePaths } from './routes';
+export { Router } from './Router';
+export { isValidNameLoaderData } from './typeguards';

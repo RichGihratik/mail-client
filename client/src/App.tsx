@@ -1,6 +1,5 @@
 import { ThemeProvider, createTheme } from '@mui/material';
 import { Router } from './router';
-import { RecoilRoot } from 'recoil';
 
 const theme = createTheme({
   components: {
@@ -16,10 +15,8 @@ const theme = createTheme({
 
 export default function App() {
   return (
-    <RecoilRoot>
-      <ThemeProvider theme={theme}>
-        <Router />
-      </ThemeProvider>
-    </RecoilRoot>
+    <ThemeProvider theme={theme}>
+      <Router />
+    </ThemeProvider>
   );
 }

@@ -1,5 +1,11 @@
-import { Outlet } from "react-router-dom";
+import { Outlet } from 'react-router-dom';
+import { HeaderBar } from '@/components';
 
 export function MainLayout() {
-  return <Outlet/>;
+  return (
+    <div className="flex flex-col flex-1 justify-center">
+      <HeaderBar />
+      <Outlet />
+    </div>
+  );
 }

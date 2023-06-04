@@ -1,54 +1,71 @@
-import { getAllMessages } from '@/api';
+import { getAllMessages, type ExtractPromise, connect } from '@/api';
 import { InboxMessage, SentMessage } from '@/types';
-import { atom, selector } from 'recoil';
+import { makeAutoObservable } from 'mobx';
 
-export const listenAsName = atom({
-  key: 'listenAsName',
-  default: '',
-});
+class MessageStore {
+  constructor() {
+    makeAutoObservable(this);
+  }
 
-const resResult = selector({
-  key: 'resResult',
-  get: async ({ get }) => {
-    const name = get(listenAsName);
-    if (name !== '') return {};
-    else return await getAllMessages(name);
-  },
-});
+  private _listenAsName = '';
 
-export const errors = selector({
-  key: 'resError',
-  get: ({ get }) => {
-    return get(resResult).errors ?? undefined;
-  },
-});
+  private res: ExtractPromise<ReturnType<typeof getAllMessages>> = {};
 
-const msgLists = selector({
-  key: 'resultLists',
-  get: ({ get }) => {
-    const res = get(resResult).result;
-    const resObj = res ? res : { sent: [], inbox: [] };
+  private _loading = false;
 
-    return resObj;
-  },
-});
+  private _socket = connect(this._listenAsName);
 
-export const sent = selector({
-  key: 'sentMessages',
-  get: ({ get }) => {
-    return get(msgLists).sent.reduce(
+  get loading() {
+    return this._loading;
+  }
+
+  get socket() {
+    return this._socket;
+  }
+
+  get listenAsName() {
+    return this._listenAsName;
+  }
+
+  setName(name: string) {
+    this._listenAsName = name;
+    this.refresh();
+  }
+
+  private setLoading(state: boolean) {
+    this._loading = state;
+  }
+
+  async refresh() {
+    if (this._listenAsName === '') {
+      this.res = {};
+    } else {
+      this.setLoading(true);
+      this.res = await getAllMessages(this._listenAsName);
+    }
+
+    this._socket = connect(this._listenAsName, () => {
+      this.setLoading(false);
+    });
+  }
+
+  get errors() {
+    return this.res.errors;
+  }
+
+  get sent() {
+    return (this.res.result?.sent ?? []).reduce(
       (acc, msg) => acc.set(msg.id, msg),
       new Map<number, SentMessage>(),
     );
-  },
-});
+  }
 
-export const inbox = selector({
-  key: 'sentMessages',
-  get: ({ get }) => {
-    return get(msgLists).inbox.reduce(
+  get inbox() {
+    return (this.res.result?.inbox ?? []).reduce(
       (acc, msg) => acc.set(msg.id, msg),
       new Map<number, InboxMessage>(),
     );
-  },
-});
+  }
+}
+
+export const messageStore = new MessageStore();

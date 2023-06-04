@@ -1,6 +1,8 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-import { EnterNameView, MailView, MainLayout } from '@/views';
+import { EnterNameView, MailView, MainLayout, mailRoutes } from '@/views';
+import { NameLoaderData } from './typeguards';
+import { messageStore } from '@/store';
 
 const router = createBrowserRouter([
   {
@@ -8,12 +10,18 @@ const router = createBrowserRouter([
     element: <MainLayout />,
     children: [
       {
-        path: '.',
+        index: true,
         element: <EnterNameView />,
       },
       {
-        path: ':name',
+        path: '/:name',
+        loader: ({ params }): Partial<NameLoaderData> => {
+          if (typeof params.name === 'string')
+            messageStore.setName(params.name);
+          return { name: params.name };
+        },
         element: <MailView />,
+        children: mailRoutes,
       },
     ],
   },
