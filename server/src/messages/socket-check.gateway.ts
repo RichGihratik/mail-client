@@ -24,6 +24,7 @@ export abstract class SocketCheckGateway
 
   handleConnection(client: WebSocket) {
     this.aliveMap.set(client, true);
+    if (this.timer === null) this.startSocketCheck();
     client.on('pong', () => {
       this.log(`Pong received`);
       this.aliveMap.set(client, true);
@@ -32,13 +33,21 @@ export abstract class SocketCheckGateway
 
   handleDisconnect(client: WebSocket) {
     this.aliveMap.delete(client);
+    if (this.server?.clients.size === 0) this.stopSocketCheck();
   }
 
-  afterInit(server: WsServer) {
-    server.on('close', () => clearInterval(this.timer));
+  protected server: WsServer | undefined = undefined;
+
+  protected stopSocketCheck() {
+    this.log('Stopping socket checking...');
+    clearInterval(this.timer);
+    this.timer = null;
+  }
+
+  protected startSocketCheck() {
+    this.log('Starting socket checking...');
     this.timer = setInterval(() => {
-      this.log(`Starting socket checks...`);
-      server.clients.forEach((ws) => {
+      this.server.clients.forEach((ws) => {
         if (this.aliveMap.get(ws) !== true) {
           this.logger.warn(`Found dead connection. Disconnecting...`);
           ws.terminate();
@@ -48,6 +57,14 @@ export abstract class SocketCheckGateway
         ws.ping();
       });
     }, CHECK_DELAY);
+  }
+
+  afterInit(server: WsServer) {
+    this.server = server;
+    this.server.on('close', () => {
+      clearInterval(this.timer);
+      this.timer = null;
+    });
   }
 
   private log(msg: string) {
