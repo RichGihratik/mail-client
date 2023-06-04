@@ -3,6 +3,12 @@ import { Chip } from '@mui/material';
 
 export function UserChip({ name, ...props }: { name: string }) {
   return (
-    <Chip color="secondary" icon={<AccountCircle />} label={name} {...props} />
+    <Chip
+      component="a"
+      color="secondary"
+      icon={<AccountCircle />}
+      label={name}
+      {...props}
+    />
   );
 }

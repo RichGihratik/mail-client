@@ -1,10 +1,9 @@
 import { TextField, Button, Typography } from '@mui/material';
 import { ChangeEvent, useState } from 'react';
+import val from 'validator';
 import { useNavigate } from 'react-router-dom';
-import { observer } from 'mobx-react';
-import { messageStore } from '@/store';
 
-export const EnterNameView = observer(() => {
+export const EnterNameView = () => {
   const [name, setName] = useState('');
   const navigate = useNavigate();
 
@@ -13,8 +12,7 @@ export const EnterNameView = observer(() => {
   }
 
   function login() {
-    if (name !== '') {
-      messageStore.setName(name);
+    if (name !== '' && val.isAlpha(name)) {
       navigate(`/${name}`);
     }
   }
@@ -24,7 +22,7 @@ export const EnterNameView = observer(() => {
       <Typography variant="h6">Enter name:</Typography>
       <TextField variant="standard" onChange={onChange} label="Name" />
       <Button
-        disabled={name === ''}
+        disabled={name === '' || !val.isAlpha(name)}
         variant="contained"
         color="primary"
         onClick={login}
@@ -33,4 +31,4 @@ export const EnterNameView = observer(() => {
       </Button>
     </div>
   );
-});
+};

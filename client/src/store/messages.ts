@@ -1,6 +1,7 @@
-import { getAllMessages, type ExtractPromise, connect } from '@/api';
+import { getAllMessages, connect } from '@/api';
 import { InboxMessage, SentMessage } from '@/types';
 import { makeAutoObservable } from 'mobx';
+import { Subscription } from 'rxjs';
 
 class MessageStore {
   constructor() {
@@ -8,8 +9,6 @@ class MessageStore {
   }
 
   private _listenAsName = '';
-
-  private res: ExtractPromise<ReturnType<typeof getAllMessages>> = {};
 
   private _loading = false;
 
@@ -29,6 +28,20 @@ class MessageStore {
 
   setName(name: string) {
     this._listenAsName = name;
+    this.inboxSub?.unsubscribe();
+    this.sentSub?.unsubscribe();
+
+    this.setLoading(true);
+
+    this._socket = connect(this._listenAsName, () => {
+      this.setLoading(false);
+    });
+
+    if (this._socket) {
+      this.inboxSub = this._socket.inbox.subscribe((msg) => this.addInbox(msg));
+      this.sentSub = this._socket.sent.subscribe((msg) => this.addSent(msg));
+    }
+
     this.refresh();
   }
 
@@ -36,35 +49,48 @@ class MessageStore {
     this._loading = state;
   }
 
+  sent = new Map<number, SentMessage>();
+  inbox = new Map<number, InboxMessage>();
+
+  private addSent(msg: SentMessage) {
+    this.sent.set(msg.id, msg);
+  }
+
+  private addInbox(msg: InboxMessage) {
+    this.inbox.set(msg.id, msg);
+  }
+
+  private inboxSub: Subscription | undefined = undefined;
+  private sentSub: Subscription | undefined = undefined;
+
   async refresh() {
     if (this._listenAsName === '') {
-      this.res = {};
+      this.sent = new Map();
+      this.inbox = new Map();
     } else {
       this.setLoading(true);
-      this.res = await getAllMessages(this._listenAsName);
-    }
+      const res = await getAllMessages(this._listenAsName);
 
-    this._socket = connect(this._listenAsName, () => {
+      this._errors = res.errors;
+
+      this.sent = (res.result?.sent ?? []).reduce(
+        (acc, msg) => acc.set(msg.id, msg),
+        new Map(),
+      );
+
+      this.inbox = (res.result?.inbox ?? []).reduce(
+        (acc, msg) => acc.set(msg.id, msg),
+        new Map(),
+      );
+
       this.setLoading(false);
-    });
+    }
   }
+
+  private _errors: string | undefined = undefined;
 
   get errors() {
-    return this.res.errors;
-  }
-
-  get sent() {
-    return (this.res.result?.sent ?? []).reduce(
-      (acc, msg) => acc.set(msg.id, msg),
-      new Map<number, SentMessage>(),
-    );
-  }
-
-  get inbox() {
-    return (this.res.result?.inbox ?? []).reduce(
-      (acc, msg) => acc.set(msg.id, msg),
-      new Map<number, InboxMessage>(),
-    );
+    return this._errors;
   }
 }
 

@@ -1,9 +1,11 @@
 import { Send, Inbox } from '@mui/icons-material';
 import { Tab } from '@mui/material';
 import { RouteObject } from 'react-router-dom';
+import { MailList } from '@/components';
 
 export function createTabs(path: string) {
-  const defaultRoute = `${path}/inbox`;
+  const _path = path;
+  const defaultRoute = `${_path}/inbox`;
 
   const map = {
     [defaultRoute]: {
@@ -11,7 +13,7 @@ export function createTabs(path: string) {
       icon: <Inbox />,
       label: 'Inbox',
     },
-    [`${path}/sent`]: {
+    [`${_path}/sent`]: {
       id: 0,
       icon: <Send />,
       label: 'Sent',
@@ -36,10 +38,10 @@ export function createTabs(path: string) {
 export const routes: RouteObject[] = [
   {
     path: '/:name/sent',
-    element: <>Sent</>,
+    element: <MailList type="sent" />,
   },
   {
     path: '/:name/inbox',
-    element: <>Inbox</>,
+    element: <MailList type="inbox" />,
   },
 ];

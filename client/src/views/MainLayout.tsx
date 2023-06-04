@@ -1,11 +1,14 @@
 import { Outlet } from 'react-router-dom';
 import { HeaderBar } from '@/components';
+import { Paper } from '@mui/material';
 
 export function MainLayout() {
   return (
-    <div className="flex flex-col flex-1 justify-center">
+    <Paper className="flex flex-col flex-1 justify-center">
       <HeaderBar />
-      <Outlet />
-    </div>
+      <div className="flex-1 flex flex-col h-100">
+        <Outlet />
+      </div>
+    </Paper>
   );
 }

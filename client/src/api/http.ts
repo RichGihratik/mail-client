@@ -11,8 +11,6 @@ type Messages = {
   sent: SentMessage[];
 };
 
-export type ExtractPromise<T> = T extends Promise<infer S> ? S : never;
-
 async function get<T>(path: string): Promise<RequestResult<T>> {
   const res = await fetch(`${API_URL}/${path}`, { method: 'GET' });
   if (!res.ok) {
@@ -23,7 +21,7 @@ async function get<T>(path: string): Promise<RequestResult<T>> {
 }
 
 export async function getAllMessages(name: string) {
-  return await get<Messages>(`users/${name}/sent`);
+  return await get<Messages>(`users/${name}`);
 }
 
 export async function getSent(name: string) {
@@ -32,4 +30,8 @@ export async function getSent(name: string) {
 
 export async function getInbox(name: string) {
   return await get<InboxMessage[]>(`users/${name}/inbox`);
+}
+
+export async function getUsers() {
+  return await get<string[]>(`users`);
 }
