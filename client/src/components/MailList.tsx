@@ -23,7 +23,7 @@ export const MailList = observer(({ type }: Props) => {
     <div className="p-10 flex flex-1 max-w-4xl flex-col items-stretch rounded-lg">
       {list.length !== 0 ? (
         list.map((msg) => (
-          <Accordion key={msg.id} sx={{ flexGrow: 1 }} elevation={10}>
+          <Accordion key={msg.id} elevation={10}>
             <AccordionSummary expandIcon={<Drafts />}>
               <Typography
                 component="span"
