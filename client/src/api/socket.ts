@@ -1,4 +1,4 @@
-import { InboxMessage, FullMessageInfo, SentMessage } from '@/types';
+import { InboxMessage, SentMessage } from '@/types';
 import { WS_URL, LISTEN_AS, SEND_EVENT, INBOX_EVENT } from './const';
 import { Observable, filter, map, share } from 'rxjs';
 import { webSocket } from 'rxjs/webSocket';
@@ -65,14 +65,13 @@ export class MessageSocket {
   }
 
   sendMessage(msg: Omit<SentMessage, 'id'>) {
-    const result: FullMessageInfo = {
+    const result = {
       ...msg,
-      id: -1,
       from: this.#name,
     };
     this.#socket.next({
       event: SEND_EVENT,
-      data: result,
+      data: result as unknown as SentMessage,
     });
   }
 
