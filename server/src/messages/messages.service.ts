@@ -54,7 +54,12 @@ export class MessagesService {
 
   async sendMessage(dto: SendMessageDto) {
     const msg = await this.db.message.create({
-      data: { ...dto },
+      data: {
+        from: dto.from,
+        to: dto.to,
+        content: dto.content,
+        title: dto.title,
+      },
     });
     this.messageObservable.next({ ...msg });
 
