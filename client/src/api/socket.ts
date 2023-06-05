@@ -67,6 +67,7 @@ export class MessageSocket {
   sendMessage(msg: Omit<SentMessage, 'id'>) {
     const result: FullMessageInfo = {
       ...msg,
+      id: -1,
       from: this.#name,
     };
     this.#socket.next({
