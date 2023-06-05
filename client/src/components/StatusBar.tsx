@@ -34,7 +34,7 @@ export const StatusBar = observer(() => {
 
   return (
     <Snackbar
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       open={open}
       autoHideDuration={6000}
       onClose={() => setOpen(false)}
