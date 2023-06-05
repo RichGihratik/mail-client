@@ -6,7 +6,7 @@ export function MainLayout() {
   return (
     <Paper className="flex flex-col flex-1 justify-center">
       <HeaderBar />
-      <div className="flex-1 flex flex-col h-100">
+      <div className="flex-1 flex flex-col">
         <Outlet />
       </div>
     </Paper>

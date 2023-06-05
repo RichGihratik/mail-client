@@ -5,3 +5,8 @@
 #root {
   @apply w-full flex flex-col min-h-screen;
 }
+
+.new-message-editor {
+  min-height: 520px;
+  min-width: 330px;
+}

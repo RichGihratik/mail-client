@@ -14,7 +14,7 @@ import { messageStore } from '@/store';
 import { Loading } from '@/components';
 import { isValidNameLoaderData } from '@/router';
 import { createTabs } from './const';
-import { StatusBar } from '@/components';
+import { StatusBar, NewMessageForm } from '@/components';
 
 export const MailView = observer(() => {
   const { loading } = messageStore;
@@ -51,9 +51,10 @@ export const MailView = observer(() => {
         {loading ? (
           <Loading />
         ) : (
-          <div className="flex-1 w-100 flex flex-col">
+          <div className="flex-1 w-full flex flex-col">
             <Outlet />
             <StatusBar />
+            <NewMessageForm />
           </div>
         )}
       </>
