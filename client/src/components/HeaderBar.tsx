@@ -32,7 +32,7 @@ export const HeaderBar = observer(() => {
             <UserChip name={name} />
             <Button
               variant="contained"
-              title="Refresh"
+              title="Logout"
               size="small"
               startIcon={<ManageAccounts />}
               color="error"
